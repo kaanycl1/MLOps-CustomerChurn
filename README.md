@@ -21,6 +21,10 @@ Data Version Control (DVC) is used to track both raw and processed datasets.
 - Given the same raw data, all processed datasets can be reproduced deterministically.
 
 ### Reproducibility
+Tested with Python 3.10
+```bash
+pip install -r requirements.txt
+```
 To reproduce the data preparation pipeline:
 1) Download the raw dataset from Kaggle.
 2) Place the CSV files under data/raw/.
