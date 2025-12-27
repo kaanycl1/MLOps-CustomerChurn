@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Customer Churn Prediction – MLOps Pipeline
 
 This project implements an end-to-end MLOps pipeline for customer churn prediction, focusing on reproducibility, data versioning, and reliable model development rather than standalone model accuracy.
@@ -22,9 +21,8 @@ Data Version Control (DVC) is used to track both raw and processed datasets.
 - Given the same raw data, all processed datasets can be reproduced deterministically.
 
 ### Reproducibility
-Tested with Python 3.10
 ```bash
-pip install -r requirements.txt
+pip install -r requirements_dvc.txt
 ```
 To reproduce the data preparation pipeline:
 1) Download the raw dataset from Kaggle.
@@ -33,6 +31,17 @@ To reproduce the data preparation pipeline:
 ```bash
 dvc repro
 ```
-=======
-# MLOps-CustomerChurn
->>>>>>> origin/train-mlflow-docker
+## Inference API (Dockerized Service)
+```bash
+docker build -t churn-api .
+docker run -p 8000:8000 churn-api
+```
+
+## UI (Optional Frontend)
+Run a lightweight local web server:
+```bash
+cd ui
+python -m http.server 5500
+```
+Then open: http://localhost:5500
+
