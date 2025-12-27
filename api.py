@@ -7,6 +7,11 @@ from contextlib import asynccontextmanager
 
 from predict import ChurnPredictor
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
+
+
 predictor = None
 
 @asynccontextmanager
@@ -17,6 +22,14 @@ async def lifespan(app: FastAPI):
     predictor = None
 
 app = FastAPI(title="Customer Churn API", version="1.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],   # for dev; later restrict
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class PredictRequest(BaseModel):
     rows: List[Dict[str, Any]]
