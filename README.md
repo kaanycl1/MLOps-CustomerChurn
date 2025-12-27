@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Customer Churn Prediction – MLOps Pipeline
 
 This project implements an end-to-end MLOps pipeline for customer churn prediction, focusing on reproducibility, data versioning, and reliable model development rather than standalone model accuracy.
@@ -32,3 +33,6 @@ To reproduce the data preparation pipeline:
 ```bash
 dvc repro
 ```
+=======
+# MLOps-CustomerChurn
+>>>>>>> origin/train-mlflow-docker
