@@ -1,4 +1,1 @@
-[core]
-    remote = localstore
-['remote "localstore"']
-    url = /home/kaan/.dvcstore
+
