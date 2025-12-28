@@ -1,12 +1,47 @@
 stages:
   preprocess:
-    cmd: python src/preprocess.py --train_csv 
-      data/raw/customer_churn_dataset-training-master.csv --test_csv 
-      data/raw/customer_churn_dataset-testing-master.csv --out_dir 
-      data/processed --test_size 0.20 --val_size 0.20 --random_state 42
+    cmd: >
+      python src/preprocess.py
+      --train_csv data/raw/customer_churn_dataset-training-master.csv
+      --test_csv data/raw/customer_churn_dataset-testing-master.csv
+      --out_dir data/processed
+      --test_size 0.20
+      --val_size 0.20
+      --random_state 42
     deps:
-    - data/raw/customer_churn_dataset-testing-master.csv
-    - data/raw/customer_churn_dataset-training-master.csv
-    - src/preprocess.py
+      - data/raw/customer_churn_dataset-testing-master.csv
+      - data/raw/customer_churn_dataset-training-master.csv
+      - src/preprocess.py
     outs:
-    - data/processed
+      - data/processed
+
+  build_retrain_splits:
+    cmd: >
+      python src/build_retrain_splits.py
+      --test_size 0.20
+      --val_size 0.20
+      --random_state 42
+    deps:
+      - data/raw/customer_churn_dataset-training-master.csv
+      - artifacts/feedback_store.csv
+      - src/build_retrain_splits.py
+    outs:
+      - data/retrain_processed/train.csv
+      - data/retrain_processed/val.csv
+      - data/retrain_processed/test.csv
+      - data/retrain_processed/retrain_stats.json
+
+  retrain_model:
+    cmd: >
+      python src/retrain_gate.py
+      --retrain_threshold 500
+    deps:
+      - src/retrain_gate.py
+      - data/retrain_processed/train.csv
+      - data/retrain_processed/val.csv
+      - data/retrain_processed/test.csv
+      - artifacts/feedback_store.csv
+      - artifacts/retrain_state.json
+    outs:
+      - artifacts/retrain_run.json
+

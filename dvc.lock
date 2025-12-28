@@ -24,3 +24,88 @@ stages:
       md5: 3c9d5963b38a4a540755e14fb1d15d7e.dir
       size: 29974004
       nfiles: 4
+  collect_feedback:
+    cmd: python src/collect_feedback.py --batch_size 200
+    deps:
+    - path: data/raw/customer_churn_dataset-testing-master.csv
+      hash: md5
+      md5: 55289b95d9b4310f554778c725097c5b
+      size: 3282220
+    - path: src/collect_feedback.py
+      hash: md5
+      md5: f162e4082910a0ac85bc2389de0b8891
+      size: 2456
+    outs:
+    - path: artifacts/feedback_store.csv
+      hash: md5
+      md5: 33839d84834171d9253419f7061b092e
+      size: 15202
+    - path: artifacts/retrain_state.json
+      hash: md5
+      md5: 9d536b77cb5a120b8150e035e09ee67f
+      size: 116
+  build_retrain_splits:
+    cmd: "python src/build_retrain_splits.py --test_size 0.20 --val_size 0.20 --random_state
+      42\n"
+    deps:
+    - path: artifacts/feedback_store.csv
+      hash: md5
+      md5: 6306075c137134613c1d1a8fb80ab81e
+      size: 91376
+    - path: data/raw/customer_churn_dataset-training-master.csv
+      hash: md5
+      md5: a8d02f389b1e2a894b1decc4dfb658be
+      size: 23448754
+    - path: src/build_retrain_splits.py
+      hash: md5
+      md5: f9ab143942dad4f1b9fc1659181ecb1b
+      size: 4020
+    outs:
+    - path: data/retrain_processed/retrain_stats.json
+      hash: md5
+      md5: d3ca5cb152013130a3af49310346790c
+      size: 545
+    - path: data/retrain_processed/test.csv
+      hash: md5
+      md5: f30f68c808d52004a2cd323805ec0014
+      size: 6004483
+    - path: data/retrain_processed/train.csv
+      hash: md5
+      md5: b62381487355003379b4b4e6b13dfeb6
+      size: 18015334
+    - path: data/retrain_processed/val.csv
+      hash: md5
+      md5: 043c67335b4afa79ec96b397ffe6b50c
+      size: 6004717
+  retrain_model:
+    cmd: "python src/retrain_gate.py --retrain_threshold 500\n"
+    deps:
+    - path: artifacts/feedback_store.csv
+      hash: md5
+      md5: 6306075c137134613c1d1a8fb80ab81e
+      size: 91376
+    - path: artifacts/retrain_state.json
+      hash: md5
+      md5: 97c3bb15d5d4e10a48a8ff0e24661254
+      size: 121
+    - path: data/retrain_processed/test.csv
+      hash: md5
+      md5: f30f68c808d52004a2cd323805ec0014
+      size: 6004483
+    - path: data/retrain_processed/train.csv
+      hash: md5
+      md5: b62381487355003379b4b4e6b13dfeb6
+      size: 18015334
+    - path: data/retrain_processed/val.csv
+      hash: md5
+      md5: 043c67335b4afa79ec96b397ffe6b50c
+      size: 6004717
+    - path: src/retrain_gate.py
+      hash: md5
+      md5: f2d374030f9c67c7609d0c8958415b03
+      size: 7356
+    outs:
+    - path: artifacts/retrain_run.json
+      hash: md5
+      md5: f3d0d31575f4dcd257e6e44fb7ac0886
+      size: 471
