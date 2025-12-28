@@ -225,4 +225,17 @@ mlflow.db
 __pycache__/
 .pytest_cache/
 catboost_info/
+<<<<<<< HEAD
 >>>>>>> origin/train-mlflow-docker
+=======
+
+# do not upload data files
+data/
+
+# not log files
+artifacts/inference_logs.csv
+
+# Unncessary files
+tempCodeRunnerFile.python
+.DS_Store
+>>>>>>> monitoring-and-drift-phase

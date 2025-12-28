@@ -21,11 +21,11 @@ async def lifespan(app: FastAPI):
     yield
     predictor = None
 
-app = FastAPI(title="Customer Churn API", version="1.0", lifespan=lifespan)
+app = FastAPI(title="Customer Churn API", version="1.1 (Phase 4)", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # for dev; later restrict
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,9 +35,11 @@ class PredictRequest(BaseModel):
     rows: List[Dict[str, Any]]
     threshold: Optional[float] = 0.5
 
+# phase 4: açıklamaları içerecek şekilde güncellendi 
 class PredictResponse(BaseModel):
     predictions: List[int]
     probabilities: List[float]
+    explanations: List[Dict[str, float]] 
 
 @app.get("/health")
 def health():
@@ -49,14 +51,28 @@ def predict(req: PredictRequest):
         raise HTTPException(status_code=400, detail="rows must be a non-empty list")
 
     if predictor is None:
-        raise HTTPException(status_code=500, detail="Model not loaded")
+        raise HTTPException(status_code=500, detail="model yüklenemedi")
 
     try:
         X = pd.DataFrame(req.rows)
+        
+        # 1. tahminleri al
         preds, probas = predictor.predict(X, threshold=float(req.threshold))
+        
+        # 2. phase 4: shap açıklamalarını al 
+        shap_df = predictor.explain(X)
+        explanations = shap_df.to_dict(orient="records")
+        
+        # 3. phase 4: drift analizi için logla [cite: 58]
+        try:
+            predictor.log_inference_data(X, probas)
+        except Exception as e:
+            print(f"Warning: Failed to log inference data: {e}")
+        
         return PredictResponse(
             predictions=[int(x) for x in preds],
-            probabilities=[float(x) for x in probas]
+            probabilities=[float(x) for x in probas],
+            explanations=explanations
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

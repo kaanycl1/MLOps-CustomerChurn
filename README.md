@@ -22,7 +22,7 @@ Data Version Control (DVC) is used to track both raw and processed datasets.
 
 ### Reproducibility
 ```bash
-pip install -r requirements_dvc.txt
+pip install -r requirements.txt
 ```
 To reproduce the data preparation pipeline:
 1) Download the raw dataset from Kaggle.
@@ -34,14 +34,37 @@ dvc repro
 ## Inference API (Dockerized Service)
 ```bash
 docker build -t churn-api .
-docker run -p 8000:8000 churn-api
+docker run -p 8000:8000 -v $(pwd)/artifacts:/app/artifacts churn-api
 ```
 
+The volume mount (`-v $(pwd)/artifacts:/app/artifacts`) ensures that inference logs are saved to your host machine's `artifacts/` directory, making them accessible for monitoring.
+
 ## UI (Optional Frontend)
+
+### Streamlit App (Recommended)
+```bash
+streamlit run streamlit_app.py
+```
+Then open: http://localhost:8501
+
+**Pages:**
+- **📊 Prediction**: Make churn predictions with SHAP explanations
+- **📈 Monitoring**: Generate and view data drift reports
+
+### HTML/JS UI (Alternative)
 Run a lightweight local web server:
 ```bash
 cd ui
 python -m http.server 5500
 ```
 Then open: http://localhost:5500
+
+## Monitoring
+
+Data drift monitoring is available as a page in the Streamlit app, or run directly:
+```bash
+python monitoring.py
+```
+
+This generates `artifacts/drift_report.html` comparing current inference data with the reference dataset.
 
