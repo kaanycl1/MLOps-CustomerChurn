@@ -232,4 +232,3 @@ artifacts/inference_logs.csv
 # Unncessary files
 tempCodeRunnerFile.python
 .DS_Store
-artifacts/inference_logs.csv
