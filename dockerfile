@@ -21,6 +21,9 @@ RUN pip install --no-cache-dir -r requirements.api.txt
 COPY api.py predict.py /app/
 COPY artifacts /app/artifacts
 
+# Ensure artifacts directory is writable for inference logs
+RUN chmod 777 /app/artifacts
+
 EXPOSE 8000
 
 # Start API

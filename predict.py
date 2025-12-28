@@ -1,9 +1,10 @@
-# predict.py
 import os
 import joblib
 import pandas as pd
-from catboost import CatBoostClassifier
+import numpy as np
+from catboost import CatBoostClassifier, Pool
 
+# varsayılan dosya yolları artifacts klasörüne bakar 
 DEFAULT_MODEL_PATH = os.getenv("MODEL_PATH", "artifacts/catboost_model.cbm")
 DEFAULT_META_PATH  = os.getenv("META_PATH",  "artifacts/model_meta.joblib")
 
@@ -52,3 +53,41 @@ class ChurnPredictor:
         proba = self.predict_proba(X)
         pred = (proba >= threshold).astype(int)
         return pred, proba
+
+    # phase 4: explainability (shap) 
+    def explain(self, X: pd.DataFrame):
+        Xn = self._normalize_input(X)
+        pool = Pool(Xn, cat_features=self.cat_cols)
+        # catboost içindeki shap değerlerini hesaplar 
+        shap_values = self.model.get_feature_importance(pool, type='ShapValues')
+        feature_names = Xn.columns.tolist()
+        return pd.DataFrame(shap_values[:, :-1], columns=feature_names)
+
+    # phase 4: monitoring log (evidently ai hazırlığı) [cite: 58]
+    def log_inference_data(self, X: pd.DataFrame, proba: np.ndarray):
+        log_file = os.path.join(os.getcwd(), "artifacts", "inference_logs.csv")
+        log_dir = os.path.dirname(log_file)
+        
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+        
+        X_logged = X.copy()
+        X_logged["prediction_proba"] = proba
+        X_logged["timestamp"] = pd.Timestamp.now()
+        
+        try:
+            file_exists = os.path.exists(log_file)
+            if not file_exists:
+                X_logged.to_csv(log_file, index=False)
+                print(f"Created inference log file: {log_file}")
+            else:
+                X_logged.to_csv(log_file, mode='a', header=False, index=False)
+                print(f"Appended to inference log file: {log_file} ({len(X_logged)} rows)")
+        except PermissionError as e:
+            print(f"Permission error writing to {log_file}: {e}")
+            print(f"Current working directory: {os.getcwd()}")
+            print(f"Log directory exists: {os.path.exists(log_dir)}, writable: {os.access(log_dir, os.W_OK)}")
+        except Exception as e:
+            print(f"Warning: Failed to log inference data to {log_file}: {e}")
+            import traceback
+            traceback.print_exc()
