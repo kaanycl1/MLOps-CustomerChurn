@@ -10,20 +10,17 @@ stages:
       hash: md5
       md5: 55289b95d9b4310f554778c725097c5b
       size: 3282220
-      isexec: true
     - path: data/raw/customer_churn_dataset-training-master.csv
       hash: md5
       md5: a8d02f389b1e2a894b1decc4dfb658be
       size: 23448754
-      isexec: true
     - path: src/preprocess.py
       hash: md5
       md5: 7db5464f5931fc1e1e1b0acba9d4c70f
       size: 5482
-      isexec: true
     outs:
     - path: data/processed
       hash: md5
-      md5: fd342dcaeaa31ed18f3bc663622d9030.dir
-      size: 29468749
+      md5: 3c9d5963b38a4a540755e14fb1d15d7e.dir
+      size: 29974004
       nfiles: 4
