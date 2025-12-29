@@ -48,7 +48,7 @@ The system implements a **threshold-based retraining policy**.
 The full pipeline can be reproduced using the following commands:
 ```bash
 dvc pull
-dvc repro preprocess
+python src/collect_feedback.py --batch_size 600
 dvc repro build_retrain_splits
 dvc repro retrain_model
 ```
@@ -73,7 +73,7 @@ These logs are later compared against the training baseline using Evidently AI, 
 
 ```bash
 streamlit run streamlit_app.py
-```
+``` 
 
 Open: [http://localhost:8501](http://localhost:8501)
 
@@ -102,6 +102,3 @@ python monitoring.py
 ```
 
 This produces `artifacts/drift_report.html`, comparing inference data with the training reference dataset.
-
-```
-
