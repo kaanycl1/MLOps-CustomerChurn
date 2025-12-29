@@ -33,9 +33,7 @@ To reproduce the pipeline:
 3. Run:
 
 ```bash
-dvc repro preprocess
-dvc repro build_retrain_splits
-dvc repro retrain_model
+dvc repro
 ```
 
 ## Periodic Retraining
@@ -106,3 +104,4 @@ python monitoring.py
 This produces `artifacts/drift_report.html`, comparing inference data with the training reference dataset.
 
 ```
+
