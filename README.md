@@ -8,7 +8,7 @@ The goal is to move beyond notebook-based experimentation and build a reproducib
 
 ## Dataset
 
-The project uses the Customer Churn Dataset from Kaggle.
+The project uses the Customer Churn Dataset from Kaggle.  
 Raw data files are not included in this repository.
 
 Dataset Source: https://www.kaggle.com/datasets/muhammadshahidazeem/customer-churn-dataset
@@ -17,54 +17,92 @@ Dataset Source: https://www.kaggle.com/datasets/muhammadshahidazeem/customer-chu
 
 Data Version Control (DVC) is used to track both raw and processed datasets.
 - Raw CSV files are tracked as DVC dependencies.
-- Processed train/validation/test splits are generated via a DVC pipeline stage.
+- Processed train/validation/test splits are generated via DVC pipeline stages.
 - Given the same raw data, all processed datasets can be reproduced deterministically.
 
-### Reproducibility
+## Reproducibility
+
 ```bash
 pip install -r requirements.txt
 ```
-To reproduce the data preparation pipeline:
-1) Download the raw dataset from Kaggle.
-2) Place the CSV files under data/raw/.
-3) Run 
+
+To reproduce the pipeline:
+
+1. Download the raw dataset from Kaggle
+2. Place the CSV files under `data/raw/`
+3. Run:
+
 ```bash
-dvc repro
+dvc repro preprocess
+dvc repro build_retrain_splits
+dvc repro retrain_model
 ```
+
+## Periodic Retraining
+
+The system implements a **threshold-based retraining policy**.
+
+* Labeled feedback is collected incrementally after deployment
+* Retraining is triggered only when a predefined number of new labeled samples is reached
+* If the threshold is not met, retraining is safely skipped
+* Model versions are updated only on successful retraining events
+
+The full pipeline can be reproduced using the following commands:
+```bash
+dvc pull
+dvc repro preprocess
+dvc repro build_retrain_splits
+dvc repro retrain_model
+```
+
 ## Inference API (Dockerized Service)
+
 ```bash
 docker build -t churn-api .
 docker run -p 8000:8000 -v $(pwd)/artifacts:/app/artifacts churn-api
 ```
 
-The volume mount (`-v $(pwd)/artifacts:/app/artifacts`) ensures that inference logs are saved to your host machine's `artifacts/` directory, making them accessible for monitoring.
+The volume mount ensures that inference logs and model artifacts are persisted locally.
 
-## UI (Optional Frontend)
+## Inference Logging and Monitoring
+
+Inference-time inputs and prediction probabilities are logged and stored under `artifacts/`.
+These logs are later compared against the training baseline using Evidently AI, enabling drift detection based on real inference traffic.
+
+## UI
 
 ### Streamlit App (Recommended)
+
 ```bash
 streamlit run streamlit_app.py
 ```
-Then open: http://localhost:8501
+
+Open: [http://localhost:8501](http://localhost:8501)
+
+
 
 **Pages:**
-- **📊 Prediction**: Make churn predictions with SHAP explanations
-- **📈 Monitoring**: Generate and view data drift reports
+
+* **Prediction** – Churn predictions with SHAP explanations
+* **Monitoring** – Data drift report generation and visualization
 
 ### HTML/JS UI (Alternative)
-Run a lightweight local web server:
+
 ```bash
 cd ui
 python -m http.server 5500
 ```
-Then open: http://localhost:5500
+
+Open: [http://localhost:5500](http://localhost:5500)
 
 ## Monitoring
 
-Data drift monitoring is available as a page in the Streamlit app, or run directly:
+Drift reports can be generated via the Streamlit UI or directly:
+
 ```bash
 python monitoring.py
 ```
 
-This generates `artifacts/drift_report.html` comparing current inference data with the reference dataset.
+This produces `artifacts/drift_report.html`, comparing inference data with the training reference dataset.
 
+```
